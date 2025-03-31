@@ -250,9 +250,6 @@ A dashboard was created using **Looker Studio** to visualize the insights from t
     *   Configure other settings like machine types as needed, or leave defaults for initial testing. The default node sizes might be sufficient but monitor resource usage.
     *   Click **"Create"**. Environment provisioning typically takes **20-30 minutes**.
 
-Okay, here is the remaining part of the `README.md` file in Markdown format, starting with "How to Reproduce".
-
-```markdown
 ## How to Reproduce
 
 Follow these steps to set up the infrastructure and run the pipeline in your own GCP environment.
