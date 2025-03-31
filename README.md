@@ -173,7 +173,7 @@ A dashboard was created using **Looker Studio** to visualize the insights from t
 ![Looker Studio Dashboard](images/dashboard.png) 
 
 **(Link to Dashboard)**
-[https://lookerstudio.google.com/reporting/eb3fb8f6-6a85-467c-925d-f1b8ba35ad9f/page/DuKFF](DASHBOARD_LINK_HERE)
+[https://lookerstudio.google.com/reporting/eb3fb8f6-6a85-467c-925d-f1b8ba35ad9f/page/DuKFF](https://lookerstudio.google.com/reporting/eb3fb8f6-6a85-467c-925d-f1b8ba35ad9f/page/DuKFF)
 
 ## How to Reproduce
 
