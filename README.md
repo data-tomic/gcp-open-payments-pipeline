@@ -28,8 +28,6 @@ The pipeline follows these steps:
 6.  **Data Transformation (BigQuery SQL):** The DAG executes a SQL query within BigQuery to transform the staging data (casting types, handling nulls, selecting final columns) and loads it into a final analytics table, partitioned and clustered for performance. (Data Warehouse - Gold Layer).
 7.  **Visualization (Looker Studio):** A Looker Studio dashboard connects to the final BigQuery analytics table to visualize the required insights.
 
-**(Optional but Recommended: Embed an Architecture Diagram)**
-*You can create a diagram using tools like diagrams.net (draw.io), Lucidchart, or even Mermaid syntax directly in Markdown and save it in the `images/` folder.*
 
 ```mermaid
 graph LR
@@ -51,3 +49,46 @@ graph LR
     I --> G;
     I --> J(Service Accounts & IAM);
     I --> C;
+
+## Technologies Used
+* **Cloud Provider:** Google Cloud Platform (GCP)
+
+* **Infrastructure as Code (IaC):** Terraform
+
+* **Workflow Orchestration:** Apache Airflow (via Cloud Composer 2)
+
+* **Data Lake:** Google Cloud Storage (GCS)
+
+* **Batch Processing:** Apache Spark (via Dataproc)
+
+* **Data Warehouse:** Google BigQuery
+
+* **Business Intelligence / Visualization:** Looker Studio (formerly Google Data Studio)
+
+* **Language:** Python (for PySpark and Airflow DAG)
+
+* **Data Format:** CSV (raw), Parquet (processed)
+
+## Pipeline Details & Code
+### 1. Infrastructure (Terraform)
+The infrastructure is defined in ./terraform/main.tf. It provisions the following:
+
+* GCS Buckets:
+
+** <project-id>-datalake-raw: For raw data uploads.
+
+** <project-id>-datalake-processed: For processed Parquet files.
+
+** <project-id>-spark-scripts: To store the PySpark script.
+
+** <project-id>-airflow-dags: Used by Cloud Composer to read DAG files (though Composer often creates its own).
+
+* BigQuery Datasets:
+
+** open_payments_staging: For raw data loaded from GCS.
+
+** open_payments_analytics: For the final transformed table used by the dashboard.
+
+* Dataproc Cluster: A cluster named etl-cluster-<region> for running Spark jobs.
+
+* IAM: Permissions for the Dataproc service account (dataproc-sa@...) and the Composer/Airflow service account (de-project-service-account@...) to access GCS, BigQuery, and Dataproc resources.
