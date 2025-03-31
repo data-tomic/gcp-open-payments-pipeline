@@ -28,6 +28,7 @@ The pipeline follows these steps:
 6.  **Data Transformation (BigQuery SQL):** The DAG executes a SQL query within BigQuery to transform the staging data (casting types, handling nulls, selecting final columns) and loads it into a final analytics table, partitioned and clustered for performance. (Data Warehouse - Gold Layer).
 7.  **Visualization (Looker Studio):** A Looker Studio dashboard connects to the final BigQuery analytics table to visualize the required insights.
 
+### Architecture Diagram
 
 ```mermaid
 graph LR
@@ -49,6 +50,14 @@ graph LR
     I --> G;
     I --> J(Service Accounts & IAM);
     I --> C;
+``` 
+*(Link to diagram image if not using Mermaid: `![Architecture Diagram](images/architecture.png)`)*
+
+
+## Technologies Used
+*   **Cloud Provider:** Google Cloud Platform (GCP)
+*   **Infrastructure as Code (IaC):** Terraform
+*   ... (остальная часть файла) ...
 
 ## Technologies Used
 * **Cloud Provider:** Google Cloud Platform (GCP)
