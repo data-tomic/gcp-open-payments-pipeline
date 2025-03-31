@@ -177,249 +177,137 @@ A dashboard was created using **Looker Studio** to visualize the insights from t
 
 ## How to Reproduce
 
-**Prerequisites:**
-
-*   Google Cloud Platform (GCP) Account with billing enabled.
-*   `gcloud` CLI installed and authenticated (`gcloud auth login`, `gcloud auth application-default login`). Ensure necessary APIs (Compute Engine, Dataproc, BigQuery, Cloud Storage, Cloud Composer, IAM) are enabled for your project.
-*   Terraform CLI installed (check `terraform version`).
-*   Git installed.
-*   A Google Account for accessing Cloud Composer and Looker Studio.
-
-**Steps:**
-
-1.  **Clone Repository:**
-    ```bash
-    git clone https://github.com/YOUR_USERNAME/gcp-open-payments-pipeline.git # Replace YOUR_USERNAME
-    cd gcp-open-payments-pipeline
-    ```
-
-2.  **Configure GCP Project:**
-    *   Set your GCP Project ID environment variable (replace with your actual ID):
-        ```bash
-        export GCP_PROJECT_ID="original-glider-455309-s7"
-        ```
-    *   Configure gcloud CLI to use this project:
-        ```bash
-        gcloud config set project $GCP_PROJECT_ID
-        ```
-    *   *(Recommended)* Review the `project_id` default value in `terraform/variables.tf` (or `terraform/main.tf` if not separated) or create a `terraform.tfvars` file to specify your project ID and region.
-
-3.  **Provision Infrastructure (Terraform):**
-    *   Navigate to the Terraform directory:
-        ```bash
-        cd terraform
-        ```
-    *   Initialize Terraform (downloads the necessary provider plugins):
-        ```bash
-        terraform init
-        ```
-    *   *(Optional)* Preview the changes Terraform will make:
-        ```bash
-        terraform plan -var="project_id=$GCP_PROJECT_ID"
-        ```
-    *   Apply the Terraform configuration to create the resources:
-        ```bash
-        terraform apply -var="project_id=$GCP_PROJECT_ID"
-        ```
-        Review the plan and type `yes` when prompted to confirm. This process will create GCS buckets, BigQuery datasets, the Dataproc cluster, and configure IAM permissions. Note the output names if you defined any (e.g., bucket names). Wait for completion.
-
-4.  **Download and Prepare Data:**
-    *   Download the official Open Payments dataset zip file for PY2023:
-        [https://download.cms.gov/openpayments/PGYR2023_P01302025_01212025.zip](https://download.cms.gov/openpayments/PGYR2023_P01302025_01212025.zip)
-    *   Unzip the downloaded file.
-    *   Locate the General Payments CSV file within the unzipped contents (e.g., `OP_DTL_GNRL_PGYR2023_P01302025.csv`).
-
-5.  **Upload Raw Data to GCS:**
-    *   Define the raw bucket name variable (matches Terraform output/naming):
-        ```bash
-        RAW_BUCKET_NAME="${GCP_PROJECT_ID}-datalake-raw"
-        ```
-    *   Upload the specific CSV file to the designated `unzipped` folder within the raw bucket (replace `<path-to-your-csv-file>` with the actual local path):
-    ```bash
-    gsutil cp <path-to-your-csv-file>/OP_DTL_GNRL_PGYR2023_P01302025.csv gs://${RAW_BUCKET_NAME}/open_payments/unzipped/
-    ```
-
-6.  **Create Cloud Composer Environment:**
-    *   Navigate to the Cloud Composer section in the GCP Console.
-    *   Click **"Create Environment"**.
-    *   Select **Composer 2**.
-    *   Provide a unique **Name** (e.g., `open-payments-airflow`). Must start with lowercase, use letters, numbers, hyphens.
-    *   Choose the **Location (Region)** consistent with your Terraform setup (e.g., `us-central1`).
-    *   Select an **Image version** (e.g., `composer-2.x.x-airflow-2.x.x`).
-    *   **Crucially:** Under **Service Account**, click the dropdown and select the specific service account created for Airflow/Composer: **`de-project-service-account@${GCP_PROJECT_ID}.iam.gserviceaccount.com`**.
-    *   Configure other settings like machine types as needed, or leave defaults for initial testing. The default node sizes might be sufficient but monitor resource usage.
-    *   Click **"Create"**. Environment provisioning typically takes **20-30 minutes**.
-
-## How to Reproduce
-
 Follow these steps to set up the infrastructure and run the pipeline in your own GCP environment.
 
 **Prerequisites:**
 
-*   **GCP Account:** A Google Cloud Platform account with billing enabled.
-*   **IAM Permissions:** Your user account needs sufficient permissions to create resources (Compute Engine, GCS, BigQuery, Dataproc, Composer, IAM roles), or at least the `Owner` role on the project for simplicity during setup.
-*   **`gcloud` CLI:** Google Cloud SDK installed and authenticated.
-    *   Authenticate user: `gcloud7.  **Upload Scripts and DAG to GCS:**
-    *   Once the Composer environment is ready, navigate to its details page in the GCP Console. Find the **"DAGs folder"** link – this is the GCS bucket Composer monitors. Define this variable:
-        ```bash
-        # auth login`
+*   **GCP Account:** A Google Cloud Platform account with active billing enabled.
+*   **IAM Permissions:** Your Google user account needs permissions to create and manage GCP resources, including Compute Engine, GCS, BigQuery, Dataproc, Cloud Composer, and IAM roles. The `Owner` role on the project is the simplest way to ensure this during setup.
+*   **Enabled APIs:** Ensure the following APIs are enabled in your GCP project: Compute Engine API, Cloud Storage API, BigQuery API, Dataproc API, Cloud Composer API, IAM API, Cloud Resource Manager API. You can enable them via the GCP Console under "APIs & Services".
+*   **`gcloud` CLI:** Google Cloud SDK installed and authenticated locally.
+    *   Authenticate your user account: `gcloud auth login`
     *   Set up Application Default Credentials: `gcloud auth application-default login`
-*   **Terraform CLI:** Terraform (version >= 1.0 recommended) installed locally. [Install Guide](https://learn Replace with the actual Composer DAGs bucket name from the GCP console
-        COMPOSER_DAGS_BUCKET="us-central1-open-payments-airflow-xxxx-bucket" # Example name format
-        ```
-    *   Define the Spark scripts bucket name (matches Terraform):
-        ```bash.hashicorp.com/tutorials/terraform/install-cli)
-*   **Git:** Git version control system installed locally.
-*   **Google Account:** For accessing the created Cloud Composer Airflow UI and Looker Studio.
+*   **Terraform CLI:** Terraform (version >= 1.0 recommended) installed locally. [Install Guide](https://learn.hashicorp.com/tutorials/terraform/install-cli)
+*   **Git:** Git installed locally.
+*   **Google Account:** For accessing the Cloud Composer Airflow UI and Looker Studio.
 
 **Steps:**
 
 1.  **Clone Repository:**
-    Clone
-        SPARK_SCRIPTS_BUCKET_NAME="${GCP_PROJECT_ID}-spark-scripts"
-        ```
-    *   Go back to the **root directory** of your cloned project locally.
-    *   Upload the PySpark script:
-        ```bash
-        gsutil cp this repository to your local machine:
+    Clone this repository to your local machine:
     ```bash
-    git clone https://github.com/YOUR_USERNAME/gcp-open-payments-pipeline.git # Replace YOUR_USERNAME
+    git clone https://github.com/data-tomic/gcp-open-payments-pipeline.git # Use your repo URL if different
     cd gcp-open-payments-pipeline
     ```
 
 2.  **Configure GCP Project:**
-    * spark/process_payments.py gs://${SPARK_SCRIPTS_BUCKET_NAME}/
-        ```
-    *   Upload the Airflow DAG:
-        ```bash
-        gsutil cp airflow/dags/open_payments_dag.py gs://${COMPOSER_DAGS_BUCKET}/dags/
-        ```
-    *   **Verification:** Double-check that the variables inside `airflow/dags/open_payments_dag.py` (like `GCP_PROJECT_ID`, `GCP_REGION`, bucket names, cluster name, dataset names, and especially `GCS_RAW   Replace `"your-gcp-project-id"` with your actual GCP Project ID.
+    *   Set your target GCP Project ID as an environment variable (replace `"your-gcp-project-id"`):
         ```bash
         export GCP_PROJECT_ID="your-gcp-project-id"
         ```
-    *   Configure the `gcloud` CLI to use your project:
+    *   Configure the `gcloud` CLI to use this project for subsequent commands:
         ```bash
-        g_INPUT_PATH`) correctly reflect your environment setup and the location of the uploaded CSV in the `unzipped` folder.
-
-8.  **Run the Airflow DAG:**
-    *   On the Composer environment details page, click the **"Airflow UI"** link.
-    *   In thecloud config set project $GCP_PROJECT_ID
+        gcloud config set project $GCP_PROJECT_ID
         ```
-    *   *(Recommendation)* Review the variables in `terraform/main.tf` (like `project_id`, `region`) and adjust if necessary, or create a `terraform.tfvars` file to override defaults.
+    *   *(Note: Terraform configuration in `/terraform` will also use this project ID, either via its default variable or passed via command line).*
 
-3.  ** Airflow UI, locate the `open_payments_pipeline_v2` DAG in the list. It might take a minute or two to appear after uploading. Check for any DAG import errors.
-    *   If the DAG is paused (default), click the toggle switch to the left to **unpause** itProvision Infrastructure (Terraform):**
-    *   Navigate to the Terraform directory:
+3.  **Provision Infrastructure with Terraform:**
+    *   Navigate to the Terraform configuration directory:
         ```bash
         cd terraform
         ```
-    *   Initialize Terraform to download the necessary providers:
+    *   Initialize Terraform to download provider plugins:
         ```bash
         terraform init
         ```
     *   *(Optional)* Preview the resources Terraform will create:
- (make it active).
-    *   Trigger the DAG manually by clicking the **Play button (▶️ Trigger DAG)** on the right. Confirm the trigger in the popup.
-    *   Monitor the DAG run's progress. Click on the DAG name and view the **Grid** or **Graph** view.        ```bash
+        ```bash
         terraform plan -var="project_id=$GCP_PROJECT_ID"
         ```
-    *   Apply the Terraform configuration to create the GCP resources:
+    *   Apply the Terraform configuration to create GCP resources:
         ```bash
         terraform apply -var="project_id=$GCP_PROJECT_ID"
         ```
-        Review Wait for all tasks (`submit_spark_processing_job`, `load_processed_parquet_to_bq_staging`, `transform_in_bq`) to show a **success** status (light green). Check task logs if any task fails (red).
-
-9.  **Verify BigQuery Tables:** the plan and type `yes` when prompted to confirm. This step creates GCS buckets, BigQuery datasets, the Dataproc cluster, and configures essential IAM roles for the service accounts. Note the created resource names.
+        Review the planned changes and type `yes` when prompted. This step provisions GCS buckets (e.g., `${GCP_PROJECT_ID}-datalake-raw`), BigQuery datasets (`open_payments_staging`, `open_payments_analytics`), a Dataproc cluster (`etl-cluster-...`), and configures IAM roles for the necessary service accounts. Wait for completion.
 
 4.  **Download and Prepare Data:**
-    *   Download the Open Payments Program
-    *   Navigate to the BigQuery section in the GCP Console.
-    *   Select your project (`original-glider-455309-s7`).
-    *   Expand the `open_payments_staging` dataset and check the `raw_payments` table (use "Preview" or Year 2023 General Payments zip file from the official CMS source:
-        [https://download.cms.gov/openpayments/PGYR2023_P01302025_01212025.zip](https://download.cms.gov/ `SELECT COUNT(*)`).
-    *   Expand the `open_payments_analytics` dataset and verify the final `payments_reporting` table contains data (use "Preview" or `SELECT COUNT(*)`). The count should be significant (e.g., ~14.6 million).
-
-10openpayments/PGYR2023_P01302025_01212025.zip)
+    *   Download the Open Payments Program Year 2023 General Payments zip file:
+        [https://download.cms.gov/openpayments/PGYR2023_P01302025_01212025.zip](https://download.cms.gov/openpayments/PGYR2023_P01302025_01212025.zip)
     *   Unzip the downloaded file.
-    *   Locate the main data file within the unzipped folder, typically named `OP_DTL_. **Create/Access the Dashboard:**
-    *   Go to [Looker Studio](https://lookerstudio.google.com/).
-    *   **Create New Report:** Click "Blank Report", then "Add data". Select "BigQuery", authorize if needed, navigate to `Your Project` -> `open_payments_analytics` -> `payments_reporting`, and click "Add".
-    *   **Build Tiles:**
-        *   Add a Bar Chart: Dimension=`payment_nature`, Metric=`Record Count`.
-        *   Add a Time Series Chart: Time Dimension=`payment_date`, Metric=`GNRL_PGYR2023_P01302025.csv`.
+    *   Identify the main data file, likely named `OP_DTL_GNRL_PGYR2023_P01302025.csv`.
 
-5.  **Upload Raw Data to GCS:**
-    *   Set the variable for the raw data bucket name (created by Terraform):
+5.  **Upload Raw Data to GCS Data Lake:**
+    *   Define the raw data bucket name variable:
         ```bash
-        RAW_BUCKET_NAME="${payment_amount_usd` (will default to SUM).
-        *   Add a Date Range Control: Set the default range to Jan 1, 2023 - Dec 31, 2023.
-    *   **Or Access Shared Dashboard:** Use the link provided in the DashboardGCP_PROJECT_ID}-datalake-raw"
+        RAW_BUCKET_NAME="${GCP_PROJECT_ID}-datalake-raw"
         ```
-    *   Upload the CSV file to the designated path in the raw bucket (replace `<path-to-your-csv-file>` with the actual local path to the CSV):
+    *   Upload the CSV file to the specific `unzipped` folder within the raw bucket (replace `<path-to-your-csv-file>`):
         ```bash
-        gsutil cp <path section above (if available). Ensure the date filter is set correctly.
-
-11. **Clean Up (Optional):**
-    *   To avoid ongoing costs, destroy the created resources:
-        ```bash
-        # From the terraform directory
-        terraform destroy -var="project_id=$GCP_-to-your-csv-file>/OP_DTL_GNRL_PGYR2023_P01302025.csv gs://${RAW_BUCKET_NAME}/open_payments/unzipped/
+        gsutil cp <path-to-your-csv-file>/OP_DTL_GNRL_PGYR2023_P01302025.csv gs://${RAW_BUCKET_NAME}/open_payments/unzipped/
         ```
 
 6.  **Create Cloud Composer Environment:**
-    *PROJECT_ID"
-        ```
-        Type `yes` to confirm. This will delete the Dataproc cluster, BigQuery datasets (including tables), and GCS buckets (unless `force_destroy` is false and they aren't empty).
-    *   Manually delete the Cloud Composer environment via   Navigate to the Cloud Composer section in the Google Cloud Console.
-    *   Click **"Create Environment"**. Select **Composer 2**.
-    *   Provide an **Environment name** (e.g., `open-payments-airflow`).
-    *   Select the **Location (Region)** consistent the GCP Console.
+    *   In the GCP Console, navigate to "Composer".
+    *   Click **"Create Environment"**. Choose **Composer 2**.
+    *   Enter an **Environment name** (e.g., `open-payments-airflow`). Use lowercase letters, numbers, hyphens.
+    *   Select the same **Location (Region)** used in your Terraform configuration (e.g., `us-central1`).
+    *   Select an appropriate **Image version**.
+    *   **Crucial:** Under **Service Account**, select the custom service account created by Terraform: **`de-project-service-account@${GCP_PROJECT_ID}.iam.gserviceaccount.com`**. Do *not* use the default Compute Engine service account.
+    *   Configure node sizes/counts if needed, otherwise use defaults.
+    *   Click **"Create"**. Wait patiently (20-30+ minutes).
 
-## Evaluation Criteria Checklist
-
-*   ✅ **Problem description:** Clearly defined in the README.
-*   ✅ **Cloud:** GCP used with IaC (Terraform). Code included and explained.
-*   ✅ **Data ingestion (Batch):** End-to-end batch pipeline orchestrated with Airflow ( with your Terraform configuration (e.g., `us-central1`).
-    *   **Important:** Under **Service Account**, click the dropdown and select the **`de-project-service-account@${GCP_PROJECT_ID}.iam.gserviceaccount.com`** service account created by Terraform. *Cloud Composer). DAG included, multiple steps shown. Data uploaded to Data Lake (GCS).
-*   ✅ **Data warehouse:** BigQuery used. Analytics table is partitioned by `payment_date` and clustered by `recipient_state`, `payment_nature`. Justification provided (optimizes common dashboard filters and aggregDo not use the default Compute Engine service account.*
-    *   Configure other settings like machine types as desired, or use defaults for basic functionality.
-    *   Click **"Create"**. Wait for the environment to be provisioned (this can take 20-30+ minutes).
-
-7.  **Uploadations).
-*   ✅ **Transformations:** Uses both Spark (PySpark script for ETL) and BigQuery SQL (for ELT/DW modeling). Code included/referenced.
-*   ✅ **Dashboard:** Looker Studio dashboard with 2 required tiles (categorical distribution, temporal distribution) created. Screenshot and Scripts and DAG to GCS:**
-    *   Once the Composer environment is ready, go to its details page in the GCP Console. Find the **"DAGs folder"** link – this is the GCS bucket Composer monitors. Copy the bucket name (it will look like `us-central1-open-payments link (optional) included. Titles and clarity considered.
-*   ✅ **Reproducibility:** Detailed step-by-step instructions provided. All necessary code (`.tf`, `.py`) and configuration details included in the repository. Commands provided.
-
-## Future Improvements (Optional)
-
-While not required for the course-...-bucket`).
-    *   Set environment variables for the bucket names:
+7.  **Deploy Pipeline Code (Scripts & DAG):**
+    *   Once Composer is ready, go to its environment details page in the GCP Console. Find and copy the **"DAGs folder" GCS bucket name** (e.g., `us-central1-open-payments-...-bucket`).
+    *   Set variables for bucket names:
         ```bash
-        # Replace with the actual Composer DAGs bucket name found above
-        COMPOSER_BUCKET_NAME="your-composer-dags-bucket-name"
-        SPARK_SCRIPTS_BUCK evaluation, the following steps could enhance this project further:
-
-*   **Testing:** Add unit tests for PySpark transformations (e.g., using `pytest`) and potentially data quality tests (e.g., using Great Expectations or `assert` statements in Spark/SQL).
-*   **Makefile:** Create a `Makefile`ET_NAME="${GCP_PROJECT_ID}-spark-scripts"
+        # Replace with the actual Composer DAGs bucket name copied from the console
+        COMPOSER_DAGS_BUCKET="your-composer-dags-bucket-name"
+        SPARK_SCRIPTS_BUCKET_NAME="${GCP_PROJECT_ID}-spark-scripts"
         ```
-    *   Navigate back to the root directory of the cloned repository.
-    *   Upload the PySpark script:
+    *   Navigate back to the **root directory** of your cloned project locally.
+    *   Upload the PySpark script to its GCS bucket:
         ```bash
-        gsutil cp spark/process_payments.py gs://${SPARK_SCR to simplify common commands like `make plan`, `make apply`, `make destroy`, `make upload_scripts`.
-*   **CI/CD:** Implement a CI/CD pipeline (e.g., using GitHub Actions, Cloud Build) to automate:
-    *   Terraform validation and deployment.
-    IPTS_BUCKET_NAME}/
+        gsutil cp spark/process_payments.py gs://${SPARK_SCRIPTS_BUCKET_NAME}/
         ```
-    *   Upload the Airflow DAG:
+    *   Upload the Airflow DAG to the Composer DAGs bucket:
         ```bash
-        gsutil cp airflow/dags/open_payments_dag.py gs://${COMPOSER_BUCKET_NAME}/dags/
+        gsutil cp airflow/dags/open_payments_dag.py gs://${COMPOSER_DAGS_BUCKET}/dags/
         ```
-    *   *(Verification*   Uploading DAGs and scripts to GCS upon code changes.
-    *   Running linters/tests.
-*   **Parameterization:** Use Airflow Variables or Jinja templating for more dynamic configuration of the DAG (e.g., input/output paths, processing dates).
-*   **Error)* Double-check that the variables inside `airflow/dags/open_payments_dag.py` (like `GCP_PROJECT_ID`, `GCS_RAW_BUCKET`, `GCS_RAW_INPUT_PATH`, `DATAPROC_CLUSTER_NAME`, etc.) correctly reflect your Handling & Monitoring:** Implement more robust error notifications (e.g., Airflow email/Slack alerts) and monitoring of pipeline metrics.
-*   **Data Quality:** Integrate formal data quality checks (e.g., checking for nulls in key columns, validating value ranges) within the Airflow DAG.
+    *   *(Verification)* Ensure paths and resource names within `airflow/dags/open_payments_dag.py` are correct for your environment.
 
+8.  **Execute the Airflow Pipeline:**
+    *   From the Composer environment page, click the **"Airflow UI"** link.
+    *   Locate the `open_payments_pipeline_v2` DAG. Wait for it to appear and check for import errors.
+    *   **Unpause** the DAG using the toggle switch on the left if it's paused.
+    *   Manually **Trigger** the DAG using the Play button (▶️) on the right.
+    *   Monitor the execution in the Airflow UI (Grid/Graph view). Wait for all tasks (`submit_spark...`, `load_processed...`, `transform_in_bq`) to reach a **success** state. Use task logs for troubleshooting if needed.
+
+9.  **Verify Data in BigQuery Warehouse:**
+    *   In the GCP Console, navigate to BigQuery.
+    *   Query the final analytics table to confirm data presence:
+        ```sql
+        SELECT COUNT(*)
+        FROM `your-gcp-project-id.open_payments_analytics.payments_reporting`; -- Replace project ID
+        ```
+        The result should be a large number (e.g., ~14.6 million). You can also preview the table data.
+
+10. **Set Up Looker Studio Dashboard:**
+    *   Go to [Looker Studio](https://lookerstudio.google.com/).
+    *   Create a **New Report** and **Add Data**.
+    *   Select the **BigQuery** connector. Authorize if prompted.
+    *   Navigate to **Your Project** -> `open_payments_analytics` -> `payments_reporting` table and click **Add**.
+    *   Build the required dashboard tiles:
+        *   **Categorical:** Bar Chart (Dimension: `payment_nature`, Metric: `Record Count`).
+        *   **Temporal:** Time Series Chart (Time Dimension: `payment_date`, Metric: `payment_amount_usd`).
+    *   Add a **Date Range Control** and set its default range to **Jan 1, 2023 - Dec 31, 2023** for accurate viewing.
+
+11. **Clean Up Resources (Optional but Recommended):**
+    *   To avoid incurring further GCP costs, destroy the infrastructure created by Terraform:
+        ```bash
+        # Navigate back to the terraform directory
+        cd ../terraform
+        terraform destroy -var="project_id=$GCP_PROJECT_ID"
+        ```
+        Type `yes` to confirm. This removes the Dataproc cluster, BigQuery datasets/tables, GCS buckets, etc.
+    *   Manually **delete the Cloud Composer environment** from the GCP Console, as Terraform does not manage it in this setup.
 
