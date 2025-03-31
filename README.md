@@ -170,7 +170,7 @@ A dashboard was created using **Looker Studio** to visualize the insights from t
 *   **Note:** The dashboard only reflects data for **Program Year 2023**.
 
 **Dashboard Screenshot:**
-![Looker Studio Dashboard](images/dashboard.png) *(Ensure `images/dashboard.png` exists)*
+![Looker Studio Dashboard](images/dashboard.png) 
 
 **(Link to Dashboard)**
 [https://lookerstudio.google.com/reporting/eb3fb8f6-6a85-467c-925d-f1b8ba35ad9f/page/DuKFF](DASHBOARD_LINK_HERE)
@@ -311,3 +311,35 @@ Follow these steps to set up the infrastructure and run the pipeline in your own
         Type `yes` to confirm. This removes the Dataproc cluster, BigQuery datasets/tables, GCS buckets, etc.
     *   Manually **delete the Cloud Composer environment** from the GCP Console, as Terraform does not manage it in this setup.
 
+## Evaluation Criteria Checklist
+
+This project aims to meet the requirements outlined in the Data Engineering Zoomcamp criteria:
+
+*   ✅ **Problem description:** The problem statement (creating a pipeline and dashboard for Open Payments data) is clearly described.
+*   ✅ **Cloud:** Google Cloud Platform (GCP) is used for all components. Infrastructure is managed using Terraform (IaC). Code is included in the repository.
+*   ✅ **Data ingestion (Batch):** An end-to-end batch pipeline is implemented. Workflow orchestration is handled by Airflow (via Cloud Composer), managing multiple dependent steps (Spark job, GCS->BQ load, BQ SQL transform). Raw data is ingested into a GCS Data Lake bucket.
+*   ✅ **Data warehouse:** Google BigQuery is utilized as the Data Warehouse. The final analytics table (`payments_reporting`) is explicitly **partitioned** by `payment_date` to optimize time-based queries common in dashboards. It is also **clustered** by `recipient_state` and `payment_nature` to improve performance for filtering and aggregation based on these categorical dimensions used in the dashboard tiles.
+*   ✅ **Transformations:** Transformations are implemented using both **PySpark** (for initial cleaning, schema enforcement, and conversion to Parquet) and **BigQuery SQL** (for final data type casting, cleaning, and structuring for the analytics layer). Code for both is included/referenced.
+*   ✅ **Dashboard:** A dashboard with the two required tile types (categorical distribution and temporal distribution) was created using **Looker Studio**. A screenshot is provided, and explanations of the tiles are included.
+*   ✅ **Reproducibility:** Detailed, step-by-step instructions are provided in the "How to Reproduce" section. All necessary code (`.tf`, `.py`, DAG) and configuration details are included in the repository, making it possible for others to run the pipeline.
+
+## Future Improvements (Optional)
+
+While the core requirements are met, the following enhancements could be considered for a production-grade system or portfolio piece:
+
+*   **Testing:**
+    *   Implement unit tests for the PySpark data transformation logic using a framework like `pytest` and potentially `chispa`.
+    *   Add data quality checks within the Airflow DAG (e.g., using `SQLCheckOperator`, custom Python operators, or integrating with tools like Great Expectations) to validate data after loading or transformation steps.
+*   **Automation & CI/CD:**
+    *   Create a `Makefile` to simplify common commands (`terraform apply`, `terraform destroy`, `upload_dag`, etc.).
+    *   Set up a CI/CD pipeline (e.g., using GitHub Actions or Google Cloud Build) to automatically lint code, run tests, deploy Terraform changes, and update Airflow DAGs/scripts in GCS upon commits to the `main` branch.
+*   **Parameterization:**
+    *   Make the Airflow DAG more dynamic by using Airflow Variables or configuration files (`.yml`) to manage environment-specific settings (bucket names, project IDs, file paths, processing dates/years) instead of hardcoding them.
+*   **Error Handling & Monitoring:**
+    *   Configure more robust alerting in Airflow for task failures (e.g., Slack or email notifications).
+    *   Integrate with Google Cloud Monitoring for pipeline metrics (e.g., job durations, data volumes processed).
+*   **Schema Management:** For more complex scenarios, consider using a schema registry or defining schemas more formally (e.g., Avro schemas).
+*   **Security Enhancements:** Refine IAM permissions to follow the principle of least privilege more strictly, potentially using custom roles.
+
+---
+*This project was developed as part of the [Data Engineering Zoomcamp](https://github.com/DataTalksClub/data-engineering-zoomcamp) by DataTalks.Club.*
